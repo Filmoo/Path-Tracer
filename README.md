@@ -13,8 +13,13 @@ make
 ./main
 
 # Results
-Most realistic result
-![Last result](https://github.com/Filmoo/Path-Tracer/blob/main/finalv2.png)
+<figure>
+  <img
+  src="https://github.com/Filmoo/Path-Tracer/blob/main/finalv2.png"
+  alt="A beautiful path tracer rendered image (:">
+  <figcaption>2k samples | 10 depth | 30min rendering on CPU</figcaption>
+</figure>
+
 
 Close up on indirect lighting
 ![Close up on indirect lighting](https://github.com/Filmoo/Path-Tracer/blob/main/indrect1.png)
