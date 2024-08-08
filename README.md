@@ -13,8 +13,9 @@ make
 ./main
 
 # Results
+Most realistic result
+![Last result](https://github.com/Filmoo/Path-Tracer/blob/main/finalv2.png)
 
-![Last result](https://github.com/Filmoo/Path-Tracer/blob/main/1.ppm)
-
+Close up on indirect lighting
 ![Close up on indirect lighting](https://github.com/Filmoo/Path-Tracer/blob/main/indrect1.png)
 
