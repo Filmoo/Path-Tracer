@@ -11,3 +11,10 @@ cd path-tracer
 cmake ..
 make
 ./main
+
+# Results
+
+![Last result](https://github.com/Filmoo/Path-Tracer/blob/main/1.ppm)
+
+![Close up on indirect lighting](https://github.com/Filmoo/Path-Tracer/blob/main/indirect.ppm)
+
