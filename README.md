@@ -16,5 +16,5 @@ make
 
 ![Last result](https://github.com/Filmoo/Path-Tracer/blob/main/1.ppm)
 
-![Close up on indirect lighting](https://github.com/Filmoo/Path-Tracer/blob/main/indirect.png)
+![Close up on indirect lighting](https://github.com/Filmoo/Path-Tracer/blob/main/indirect1.png)
 
