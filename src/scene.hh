@@ -30,7 +30,7 @@ class Scene {
         //Skybox
         Image* skybox;
 
-
+        Scene(Camera camera);
         Scene(Camera camera, Image* skybox);
         Scene(std::vector<Object*> objects, std::vector<Light*> lights, Camera camera, Image* skybox);
 

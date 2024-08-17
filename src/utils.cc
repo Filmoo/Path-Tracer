@@ -14,6 +14,7 @@ double random_double(uint32_t& state) {
 
 double random_double(uint32_t& state, double min, double max) {
     return min + (max - min) * random_double(state);
+    
 }
 
 
@@ -38,26 +39,18 @@ Vector3 getRandomDirection() {
 
 
 Vector3 reflect(Vector3 incident, Vector3 normal) {
-    incident = incident.normalize();
-    normal = normal.normalize();
     return incident - normal * 2.0f * incident.dot(normal);
 }
 
-bool refract(Vector3 incident, Vector3 normal, float nint, Vector3& refracted) {
-    incident = incident.normalize();
-    normal = normal.normalize();
+bool refract(Vector3 incident, Vector3 normal, float ni_over_nt, Vector3& refracted) {
     float cosi = incident.dot(normal);
-    float k = 1 - nint * nint * (1 - cosi * cosi);
-    if (k < 0)
-    {
-        refracted = Vector3(0, 0, 0);
-        return false;
+    float k = 1.0f - ni_over_nt * ni_over_nt * (1.0f - cosi * cosi);
+    if (k > 0) {
+        refracted = (incident - normal * cosi) * ni_over_nt - normal * sqrt(k);
+        refracted = refracted.normalize();
+        return true;
     }
-    else
-    {
-        refracted = incident * nint + normal * (nint * cosi - sqrt(k));
-        return true;    
-    }
+    return false;
 }
 
 float schlick(float cosine, float ref_idx) {

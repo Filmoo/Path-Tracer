@@ -53,15 +53,12 @@ bool Sphere_Light::intersect(Point3 o, Vector3 v, float &t)
     }
     
     double thc = sqrt(radius - d2);
+    float t1 = tca - thc;
+    float t2 = tca + thc;
 
-    float t1,t2;
-    t1 = tca - thc;
-    t2 = tca + thc;
     if (t1 > t2)
     {
-        float temp = t1;
-        t1 = t2;
-        t2 = temp;
+        std::swap(t1, t2);
     }
     if (t1 < 0) 
     {   

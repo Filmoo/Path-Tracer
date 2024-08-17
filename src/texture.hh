@@ -92,11 +92,17 @@ class Metal_Texture : public Texture_Material {
         }
         bool scatter(Vector3 normal, Vector3 incident, Point3 hitPoint, Vector3 &scattered, Color &attenuation,  double& pdf) 
         {
-            Vector3 reflected = reflect(incident, normal);
-            scattered = reflected.normalize() + getRandomDirectionHemisphere(reflected) * roughness;
+            incident = incident.normalize();
+            normal = normal.normalize();
+
+            Vector3 reflected = reflect(incident, normal).normalize();
+
+            scattered = reflected + getRandomDirectionHemisphere(reflected) * roughness;
+            scattered = scattered.normalize();
+
             attenuation = c;
             pdf = scattering_pdf(normal, scattered);
-            return pdf != 0;
+            return scattered.dot(normal) > 0;
 ;
         }
 };
@@ -121,34 +127,39 @@ class Dieletric_Texture : public Texture_Material {
             //pdf calculation for dielectric material
             return 1;
         }
-        bool scatter(Vector3 normal, Vector3 incident, Point3 hitPoint, Vector3 &scattered, Color &attenuation, double& pdf) 
-        {
-            Vector3 outwardN;
-            Vector3 reflected = reflect(incident, normal);
-            Vector3 refracted;
-            float ni_over_nt;
-            attenuation = c;
-            float reflect_prob;
-            float cosine;
-            if (incident.dot(normal) > 0)
-            {
-                outwardN = normal * -1;
-                ni_over_nt = iorefrac;
-                cosine = incident.normalize().dot(normal);
-            }
-            else
-            {
-                outwardN = normal;
-                ni_over_nt = 1.0f / iorefrac;
-                cosine = -incident.normalize().dot(normal);
-            }
-            reflect_prob = refract(incident, outwardN, ni_over_nt, refracted) ? schlick(cosine, iorefrac) : 1.0;
-            scattered = random_double(seed) < reflect_prob ? reflected : refracted;
-            pdf = scattering_pdf(normal, scattered);
-            if (pdf == 0)
-                return false;
-            return true;
+        bool scatter(Vector3 normal, Vector3 incident, Point3 hitPoint, Vector3 &scattered, Color &attenuation, double &pdf) {
+        Vector3 outwardN;
+        Vector3 reflected = reflect(incident, normal);
+        float ni_over_nt;
+        attenuation = c;
+        Vector3 refracted;
+        float reflect_prob;
+        float cosine;
+        
+        if (incident.dot(normal) > 0) {
+            outwardN = normal * (-1);
+            ni_over_nt = iorefrac;
+            cosine = iorefrac * incident.dot(normal) / incident.length();
+        } else {
+            outwardN = normal;
+            ni_over_nt = 1.0f / iorefrac;
+            cosine = -incident.dot(normal) / incident.length();
         }
+
+        if (refract(incident, outwardN, ni_over_nt, refracted)) {
+            reflect_prob = schlick(cosine, iorefrac);
+        } else {
+            reflect_prob = 1.0f;
+        }
+
+        if (random_double(seed) < reflect_prob) {
+            scattered = reflected;
+        } else {
+            scattered = refracted;
+        }
+        pdf = 1.0f; // For simplicity, assuming equal probability for both reflection and refraction.
+        return true;
+    }
 };
 
 class Emitter_Texture : public Texture_Material {

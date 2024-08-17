@@ -30,20 +30,18 @@ bool Sphere::intersect(Point3 o, Vector3 v, float &t)
     float t1,t2;
     t1 = tca - thc;
     t2 = tca + thc;
-    if (t1 > t2)
-    {
-        float temp = t1;
-        t1 = t2;
-        t2 = temp;
-    }
-    if (t1 < 0) 
-    {   
-        t1 = t2;
-        if (t1 < 0) 
+    float epsilon = 0.0001;
+    if (t1 < epsilon) {
+        if (t2 < epsilon) {
             return false;
+        } else {
+            t = t2;
+            return true;
+        }
+    } else {
+        t = t1;
+        return true;
     }
-    t = t1;
-    return true;
 }
 
 

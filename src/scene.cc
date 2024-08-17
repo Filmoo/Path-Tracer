@@ -14,6 +14,8 @@ struct PathSegment {
     Vector3 direction;
     Color color;
 };
+Scene::Scene(Camera camera) 
+    : objects(std::vector<Object*>()), lights(std::vector<Light*>()), camera(camera), skybox(nullptr) {}
 
 Scene::Scene(Camera camera, Image* skybox) 
     : objects(std::vector<Object*>()), lights(std::vector<Light*>()), camera(camera), skybox(skybox) {}
@@ -26,9 +28,6 @@ Image Scene::Render(){
     //Render an image depending on whats in the scene and where is the camera
     //We'll use a left-handed system of camera
     const Point3 C = camera.C;
-    Vector3 camDirection = camera.forward;
-    camDirection = camDirection.normalize();
-
     int img_width = 1000;
     int img_height = static_cast<int>(img_width / camera.focalLength);  
     std::cout << "Resolution: " << img_width << "x" << img_height << "\n";
@@ -61,13 +60,15 @@ Image Scene::Render(){
                         break;
                     int x = index % img.width;
                     int y = index / img.width;
+
                     Color cumulativeColor(0, 0, 0);
                     for( int s = 0; s < indirectSamples; s++)
-                    {   
+                    {  
                         Point3 pixel_loc = pixel00_loc + pixelDeltaU * x + pixelDeltaV * y;
                         Point3 pixel_sample = pixel_loc + (pixelDeltaU * (-0.5 + random_double(seed,0,1))) + (pixelDeltaV * (-0.5 + random_double(seed,0,1)));
                         Vector3 rayDirection = Vector3(C, pixel_sample).normalize();
-                        cumulativeColor +=  rayCastColor(C, rayDirection, depth);
+                        Color sampleColor =  rayCastColor(C, rayDirection, depth);
+                        cumulativeColor += sampleColor;
                     }
                     cumulativeColor = cumulativeColor * (1.0f / indirectSamples);
                     img.setPixel(x,y,cumulativeColor);
@@ -86,7 +87,7 @@ void Scene::getClosestObject(Point3 origin, Vector3 direction, float &minDistanc
         float t1;
         if(obj->intersect(origin, direction, t1))
         {
-            if (t1 < minDistance)
+            if (t1 < minDistance && t1 > 0.001f)
             {
                 minDistance = t1;
                 closestObject = obj;
@@ -102,7 +103,7 @@ void Scene::getClosestObject(Point3 origin, Vector3 direction, float &minDistanc
         float t1;
         if(obj != exclude && obj->intersect(origin, direction, t1))
         {
-            if (t1 < minDistance)
+            if (t1 < minDistance && t1 > 0.001f)
             {
                 minDistance = t1;
                 closestObject = obj;
@@ -118,7 +119,7 @@ void Scene::getClosestObject(Point3 origin, Vector3 direction, float &minDistanc
             continue;
         if(obj != exclude1 && obj != exclude2 && obj->intersect(origin, direction, t1))
         {
-            if (t1 < minDistance)
+            if (t1 < minDistance && t1 > 0.001f)
             {
                 minDistance = t1;
                 closestObject = obj;
@@ -130,6 +131,8 @@ void Scene::getClosestObject(Point3 origin, Vector3 direction, float &minDistanc
 
 Color Scene::skyBox(Vector3 direction)
 {
+    if (skybox == nullptr)
+        return Color(0,0,0);
     float u = 0.5f + atan2(direction.z, direction.x) / (2.0f * M_PI);
     float v = 0.5f - asin(direction.y) / M_PI;
     if (u < 0) u += 1.0f;
@@ -139,7 +142,7 @@ Color Scene::skyBox(Vector3 direction)
 
 
 Color Scene::rayCastColor(Point3 origin, Vector3 direction, int depth) {
-    if (depth > 10) {
+    if (depth > 5) {
         return Color(0, 0, 0);
     }
     float minDistance = std::numeric_limits<float>::max();
@@ -150,9 +153,8 @@ Color Scene::rayCastColor(Point3 origin, Vector3 direction, int depth) {
         return skyBox(direction);
     }
 
-    Point3 hitPoint = direction * minDistance + origin;
-    Vector3 normal = closestObject->normal(hitPoint);
-    normal = normal.dot(direction) < 0 ? normal : normal * -1;
+    Point3 hitPoint = origin + direction * minDistance;
+    Vector3 normal = closestObject->normal(hitPoint).normalize();
 
     Vector3 scattered;
     Color attenuation;
@@ -162,14 +164,22 @@ Color Scene::rayCastColor(Point3 origin, Vector3 direction, int depth) {
     if (!closestObject->texture->scatter(normal, direction, hitPoint, scattered, attenuation, pdf)) {
         return emittedColor;
     }
-    float prr = std::max(attenuation.r, std::max(attenuation.g, attenuation.b));
+
     //russian roulette
-    if (depth > 5 && random_double(seed,0,1) > prr)
+    /*
+    auto prr = std::max(attenuation.r, std::max(attenuation.g, attenuation.b));
+
+    if (depth > 5) {
+        if (random_double(seed) > prr * 0.9) {
             return emittedColor;
-    scattered = scattered.normalize();
-    float cosTheta = normal.dot(scattered);
+        }
+        attenuation = attenuation * (1.0f / prr);
+    }
+    */
+
+    float cosTheta = normal.dot(scattered.normalize()); 
     Color castColor = rayCastColor(hitPoint, scattered, depth+1);
-    return attenuation * castColor * cosTheta / (prr) + emittedColor;
+    return attenuation * castColor + emittedColor;
 }
 
 
