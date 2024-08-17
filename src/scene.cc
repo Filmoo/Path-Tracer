@@ -142,7 +142,7 @@ Color Scene::skyBox(Vector3 direction)
 
 
 Color Scene::rayCastColor(Point3 origin, Vector3 direction, int depth) {
-    if (depth > 5) {
+    if (depth > 10) {
         return Color(0, 0, 0);
     }
     float minDistance = std::numeric_limits<float>::max();
@@ -177,9 +177,9 @@ Color Scene::rayCastColor(Point3 origin, Vector3 direction, int depth) {
     }
     */
 
-    float cosTheta = normal.dot(scattered.normalize()); 
+    float cosTheta = std::abs(normal.dot(scattered));
     Color castColor = rayCastColor(hitPoint, scattered, depth+1);
-    return attenuation * castColor + emittedColor;
+    return attenuation * castColor * cosTheta + emittedColor;
 }
 
 
