@@ -28,8 +28,11 @@ class Vector3 {
         Vector3 cross(const Vector3 &v);
         Vector3 normalize();
         Vector3 random(float min, float max);
+        Vector3 orthogonal() const;
         float magnitude() const;
         float length() const;
+        float length_squared() const;
+        
         //Methods for displaying vectors in a good way
         friend std::ostream& operator<<(std::ostream &os, const Vector3& vec){
             os << "x: " << vec.x << " y: " << vec.y << " z: " << vec.z;

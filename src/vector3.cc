@@ -77,6 +77,15 @@ float Vector3::magnitude() const
 {
     return sqrt(x * x + y * y + z * z);
 }  
+float Vector3::length_squared() const
+{
+    return x * x + y * y + z * z;
+}
+Vector3 Vector3::orthogonal() const
+{
+    return Vector3(y, -x, 0);
+}
+
 Vector3 Vector3::random(float min, float max)
 {
     return Vector3(rand() % (int)max + min, rand() % (int)max + min, rand() % (int)max + min);

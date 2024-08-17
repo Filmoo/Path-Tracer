@@ -20,13 +20,6 @@ class Object{
 
         virtual Color emission() = 0;
 
-        virtual bool isDiffuse(Point3 p) {
-            float kd, ks, shine, iorefrac, ioreflec;
-            Color c;
-            getTextureMaterial(p, c, kd, ks, shine, iorefrac, ioreflec);
-            return kd > 0 && ks == 0;
-        }
-
         Object(Texture_Material* texture) : texture(texture) {} // Default constructor
 
 };

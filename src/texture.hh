@@ -5,11 +5,12 @@
 #include "color.hh"
 #include "image.hh"
 #include "utils.hh"
+
 #include <vector>
 #include <algorithm>
 #include <cmath>
 #include <fstream>
-
+#define M_PIl 3.141592653589793238462643383279502884L
 enum Material_Type {
     Lambertian,
     Metal,
@@ -44,7 +45,7 @@ class Uniform_Texture : public Texture_Material {
         float iorefrac;
         float ioreflec;
         Uniform_Texture(Color c, float kd, float ks, float shine, float iorefrac, float ioreflec)
-            : c(c), kd(kd), ks(ks), shine(shine), iorefrac(iorefrac), ioreflec(ioreflec) {};
+            : c(c), kd(kd), ks(ks), shine(shine), iorefrac(iorefrac), ioreflec(ioreflec){};
         void getTextureMaterial(Vector3 p, Color &c, float &kd, float &ks, float &shine, float &iorefrac, float &ioreflec)
         {
             c = this->c;
@@ -56,25 +57,25 @@ class Uniform_Texture : public Texture_Material {
         }
         double scattering_pdf(Vector3 normal, Vector3 scattered) 
         { 
-            auto cosine = normal.dot(scattered);
-            return cosine < 0 ? 0 : cosine / M_PI;
+            double cosine = normal.dot(scattered);
+            return cosine < 0 ? 0 : cosine / M_PIl;
         }
-        bool scatter(Vector3 normal, Vector3 incident, Point3 hitPoint, Vector3 &scattered, Color &attenuation, double& pdf) 
+        bool scatter(Vector3 normal, Vector3 incident, Point3 hitPoint, Vector3 &scattered, Color &attenuation,  double& pdf) 
         {
             Vector3 target = hitPoint + normal + getRandomDirectionHemisphere(normal);
             scattered = (target - hitPoint).normalize();  
             attenuation = c;    
-            pdf = scattering_pdf(normal, scattered);
-            return true;
+            pdf = scattering_pdf(normal, scattered);           
+            return pdf != 0;
         }
 };
 
 class Metal_Texture : public Texture_Material {
     public:
         Color c;
-        float fuzz;
-        Metal_Texture(Color c, float fuzz)
-            : c(c), fuzz(fuzz) {}
+        float roughness;
+        Metal_Texture(Color c, float roughness)
+            : c(c), roughness(roughness) {}
         void getTextureMaterial(Vector3 p, Color &c, float &kd, float &ks, float &shine, float &iorefrac, float &ioreflec)
         {
             c = this->c;
@@ -84,24 +85,31 @@ class Metal_Texture : public Texture_Material {
             iorefrac = 0;
             ioreflec = 1;
         }
-        bool scatter(Vector3 normal, Vector3 incident, Point3 hitPoint, Vector3 &scattered, Color &attenuation, double& pdf) 
+        double scattering_pdf(Vector3 normal, Vector3 scattered) 
+        { 
+            double cosine = normal.dot(scattered);
+            return cosine < 0 ? 0 : cosine / M_PIl;
+        }
+        bool scatter(Vector3 normal, Vector3 incident, Point3 hitPoint, Vector3 &scattered, Color &attenuation,  double& pdf) 
         {
-            Vector3 target = hitPoint + normal + getRandomDirectionHemisphere(normal);
-            scattered = (target - hitPoint).normalize();  
-            attenuation = c;    
+            Vector3 reflected = reflect(incident, normal);
+            scattered = reflected.normalize() + getRandomDirectionHemisphere(reflected) * roughness;
+            attenuation = c;
             pdf = scattering_pdf(normal, scattered);
-            return true;
+            return pdf != 0;
+;
         }
 };
 
 class Dieletric_Texture : public Texture_Material {
     public:
         float iorefrac;
-        Dieletric_Texture(float iorefrac)
-            : iorefrac(iorefrac) {}
+        Color c;
+        Dieletric_Texture(Color c, float iorefrac)
+            : c(c), iorefrac(iorefrac) {}
         void getTextureMaterial(Vector3 p, Color &c, float &kd, float &ks, float &shine, float &iorefrac, float &ioreflec)
         {
-            c = Color(0.5,0.5,0.5);
+            c = c;
             kd = 0;
             ks = 0;
             shine = 0;
@@ -110,8 +118,36 @@ class Dieletric_Texture : public Texture_Material {
         }
         double scattering_pdf(Vector3 normal, Vector3 scattered) 
         { 
-            auto cosine = normal.dot(scattered);
-            return cosine < 0 ? 0 : cosine / M_PI;
+            //pdf calculation for dielectric material
+            return 1;
+        }
+        bool scatter(Vector3 normal, Vector3 incident, Point3 hitPoint, Vector3 &scattered, Color &attenuation, double& pdf) 
+        {
+            Vector3 outwardN;
+            Vector3 reflected = reflect(incident, normal);
+            Vector3 refracted;
+            float ni_over_nt;
+            attenuation = c;
+            float reflect_prob;
+            float cosine;
+            if (incident.dot(normal) > 0)
+            {
+                outwardN = normal * -1;
+                ni_over_nt = iorefrac;
+                cosine = incident.normalize().dot(normal);
+            }
+            else
+            {
+                outwardN = normal;
+                ni_over_nt = 1.0f / iorefrac;
+                cosine = -incident.normalize().dot(normal);
+            }
+            reflect_prob = refract(incident, outwardN, ni_over_nt, refracted) ? schlick(cosine, iorefrac) : 1.0;
+            scattered = random_double(seed) < reflect_prob ? reflected : refracted;
+            pdf = scattering_pdf(normal, scattered);
+            if (pdf == 0)
+                return false;
+            return true;
         }
 };
 
