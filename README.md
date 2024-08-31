@@ -23,6 +23,7 @@ Pour modifier la taille de l'image il faut modifier la width dans scene.cc (~ li
 - [ ] Path Tracer Settings Panel
 ## Path Tracer
 - [x] Multiple Light Sources
+- [ ] Mesh and Objects
 - [ ] Adaptive Sampling
 - [ ] Depth of Field
 - [ ] Motion Blur
