@@ -1,0 +1,114 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\gabii\Epita\Path-Tracer\src\scene.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\gabii\Epita\Path-Tracer\src\box.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\gabii\Epita\Path-Tracer\src\camera.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\gabii\Epita\Path-Tracer\src\color.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\gabii\Epita\Path-Tracer\src\image.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\gabii\Epita\Path-Tracer\src\light.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\gabii\Epita\Path-Tracer\src\main.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\gabii\Epita\Path-Tracer\src\plane.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\gabii\Epita\Path-Tracer\src\sphere.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\gabii\Epita\Path-Tracer\src\texture.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\gabii\Epita\Path-Tracer\src\tiny_obj_loader.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\gabii\Epita\Path-Tracer\src\triangle.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\gabii\Epita\Path-Tracer\src\utils.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\gabii\Epita\Path-Tracer\src\vector3.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\gabii\Epita\Path-Tracer\src\blob.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\gabii\Epita\Path-Tracer\src\blob_tables.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\gabii\Epita\Path-Tracer\src\box.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\gabii\Epita\Path-Tracer\src\camera.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\gabii\Epita\Path-Tracer\src\color.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\gabii\Epita\Path-Tracer\src\colors.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\gabii\Epita\Path-Tracer\src\image.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\gabii\Epita\Path-Tracer\src\light.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\gabii\Epita\Path-Tracer\src\mesh.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\gabii\Epita\Path-Tracer\src\obj_reader.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\gabii\Epita\Path-Tracer\src\object.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\gabii\Epita\Path-Tracer\src\plane.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\gabii\Epita\Path-Tracer\src\scene.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\gabii\Epita\Path-Tracer\src\sphere.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\gabii\Epita\Path-Tracer\src\texture.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\gabii\Epita\Path-Tracer\src\triangle.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\gabii\Epita\Path-Tracer\src\utils.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\gabii\Epita\Path-Tracer\src\vector3.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\gabii\Epita\Path-Tracer\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{423D9066-277F-3898-856A-5D15C678533D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{94510585-ACFD-330A-BCAC-24F190E8CC54}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

@@ -6,78 +6,89 @@
 #include <iostream>
 #include <future>
 #include <atomic>
+#include <limits>
 #define M_PI  3.14159265358979323846
 #define M_PIl 3.141592653589793238462643383279502884L
+#define MAX(a,b) (((a) > (b)) ? (a) : (b))
+#define MIN(a,b) (((a) < (b)) ? (a) : (b))
 
 struct PathSegment {
     Point3 origin;
     Vector3 direction;
     Color color;
 };
-Scene::Scene(Camera camera) 
+Scene::Scene(Camera* camera) 
     : objects(std::vector<Object*>()), lights(std::vector<Light*>()), camera(camera), skybox(nullptr) {}
 
-Scene::Scene(Camera camera, Image* skybox) 
+Scene::Scene(Camera* camera, Image* skybox) 
     : objects(std::vector<Object*>()), lights(std::vector<Light*>()), camera(camera), skybox(skybox) {}
 
-Scene::Scene(std::vector<Object*> objects, std::vector<Light*> lights, Camera camera, Image* skybox)
+Scene::Scene(std::vector<Object*> objects, std::vector<Light*> lights, Camera* camera, Image* skybox)
     : objects(objects), lights(lights), camera(camera), skybox(skybox) {}
 
 
-Image Scene::Render(){
+Image Scene::Render(int img_height, int img_width, int indirectSamples, int depth, int nb_threads, std::vector<Color>* accumulation_frame, int current_sample) {
     //Render an image depending on whats in the scene and where is the camera
     //We'll use a left-handed system of camera
-    const Point3 C = camera.C;
-    int img_width = 1000;
-    int img_height = static_cast<int>(img_width / camera.focalLength);  
-    std::cout << "Resolution: " << img_width << "x" << img_height << "\n";
+    Vector3 C = *camera->C;
     img_height = (img_height < 1) ? 1 : img_height;
+
+    Vector3 right = (*camera->forward).cross(*camera->up).normalize();
+    Vector3 up = camera->up->normalize();
+
+    img_height = (img_height < 1) ? 1 : img_height;
+
     Image img = Image(img_width, img_height);
     float focal_length = 1;
     float viewportHeight = 1;
     float viewportWidth = viewportHeight * (static_cast<float>(img_width) / img_height);
-    Vector3 viewport_u = Vector3(0, viewportWidth, 0);
-    Vector3 viewport_v = Vector3(0 ,0 ,-viewportHeight);
+
+    Vector3 viewport_u = right * viewportWidth;
+    Vector3 viewport_v = up * viewportHeight;
     Vector3 pixelDeltaU = viewport_u / img_width;
     Vector3 pixelDeltaV = viewport_v / img_height;
-    Point3 viewportUpperLeft = C - viewport_u / 2 - viewport_v / 2 + Vector3(focal_length,0,0);
+    Point3 viewportUpperLeft = C + *camera->forward * focal_length - viewport_u / 2.0f - viewport_v / 2.0f;
     const Point3 pixel00_loc =  viewportUpperLeft + (pixelDeltaU + pixelDeltaV) * 0.5;
-    int numThreads = std::thread::hardware_concurrency();
-    //numThreads = 1;
-	std::size_t max = img.width * img.height;
+    int maxThreads = std::thread::hardware_concurrency();
+    if (nb_threads == 0)
+        nb_threads = maxThreads;
+        
+    int numThreads = MIN(nb_threads, maxThreads);
+	std::size_t max = img_width * img_height;
     std::atomic_size_t count(0);
     std::vector<std::future<void>> future_vector;
-    std::cout << "Number of threads: " << numThreads << "\n";
+    std::vector<Color> pixels(img_width * img_height);
     while(numThreads--)
     {
         future_vector.emplace_back(
-            std::async([=, &count, &img]()
+            std::async([=, &count, &img, &pixels, &accumulation_frame]()
             {
                 while(true)
                 {
                     std::size_t index = count++;
                     if (index >= max)
+                    {
                         break;
+                    }
                     int x = index % img.width;
                     int y = index / img.width;
-
-                    Color cumulativeColor(0, 0, 0);
-                    for( int s = 0; s < indirectSamples; s++)
-                    {  
-                        Point3 pixel_loc = pixel00_loc + pixelDeltaU * x + pixelDeltaV * y;
-                        Point3 pixel_sample = pixel_loc + (pixelDeltaU * (-0.5 + random_double(seed,0,1))) + (pixelDeltaV * (-0.5 + random_double(seed,0,1)));
-                        Vector3 rayDirection = Vector3(C, pixel_sample).normalize();
-                        Color sampleColor =  rayCastColor(C, rayDirection, depth);
-                        cumulativeColor += sampleColor;
-                    }
-                    cumulativeColor = cumulativeColor * (1.0f / indirectSamples);
-                    img.setPixel(x,y,cumulativeColor);
+                    Point3 pixel_loc = pixel00_loc + pixelDeltaU * x + pixelDeltaV * y;
+                    Point3 pixel_sample = pixel_loc + (pixelDeltaU * (-0.5 + random_double(seed,0,1))) + (pixelDeltaV * (-0.5 + random_double(seed,0,1)));
+                    Vector3 rayDirection = Vector3(C, pixel_sample).normalize();
+                    Color sampleColor =  rayCastColor(C, rayDirection, depth);
+                    accumulation_frame->at(y * img_width + x) += sampleColor;
+                    pixels[y * img_width + x] = accumulation_frame->at(y * img_width + x) / current_sample;
                 }
             }
             )
         );
     }
-    return img;
+    for(auto &f : future_vector)
+        f.get();
+
+    Image output = Image(img_width, img_height);
+    output.pixels = pixels;
+    return output;
 }
 
 
@@ -142,14 +153,12 @@ Color Scene::skyBox(Vector3 direction)
 
 
 Color Scene::rayCastColor(Point3 origin, Vector3 direction, int depth) {
-    if (depth > 10) {
-        return Color(0, 0, 0);
-    }
-    float minDistance = std::numeric_limits<float>::max();
+
+    float minDistance = std::numeric_limits<float>::infinity();
     Object* closestObject = nullptr;
     getClosestObject(origin, direction, minDistance, closestObject);
 
-    if (closestObject == nullptr || minDistance == std::numeric_limits<float>::max()) {
+    if (closestObject == nullptr || minDistance == std::numeric_limits<float>::infinity()) {
         return skyBox(direction);
     }
 
@@ -166,8 +175,8 @@ Color Scene::rayCastColor(Point3 origin, Vector3 direction, int depth) {
     }
 
     //russian roulette
-    /*
-    auto prr = std::max(attenuation.r, std::max(attenuation.g, attenuation.b));
+    
+    auto prr = MAX(attenuation.r, MAX(attenuation.g, attenuation.b));
 
     if (depth > 5) {
         if (random_double(seed) > prr * 0.9) {
@@ -175,8 +184,7 @@ Color Scene::rayCastColor(Point3 origin, Vector3 direction, int depth) {
         }
         attenuation = attenuation * (1.0f / prr);
     }
-    */
-
+    
     float cosTheta = std::abs(normal.dot(scattered));
     Color castColor = rayCastColor(hitPoint, scattered, depth+1);
     return attenuation * castColor * cosTheta + emittedColor;

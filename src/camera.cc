@@ -1,10 +1,11 @@
 #include "camera.hh"
+#define M_PI 3.14159265358979323846
 //Defaut constructor
 Camera::Camera()
 {
-    C = Point3(0, 0, 0);
-    forward = Vector3(1, 0, 0);
-    up = Vector3(0, 0, 1);
+    C = new Vector3(0, 0, 0);
+    forward = new Vector3(1, 0, 0);
+    up = new Vector3(0, 0, 1);
     alpha = 20;
     beta = 20;
     zmin = 1;
@@ -14,14 +15,13 @@ Camera::Camera()
     halfHeight = 0;
 }
 
-Camera::Camera(Point3 C, Point3 P, Vector3 up, float alpha, float beta, float zmin, float fov, float aspectRatio, float focalLength)
+Camera::Camera(Vector3* C, Vector3* P, Vector3* up, float alpha, float beta, float zmin, float fov, float aspectRatio, float focalLength)
     : C(C), alpha(alpha), beta(beta), zmin(zmin), fov(fov), aspectRatio(aspectRatio), focalLength(focalLength)
     {
-        forward = Vector3(P - C).normalize();
+        forward = P;
         float theta = fov * M_PI / 180;
         halfHeight = std::tan(theta   / 2);
         halfWidth = halfHeight * aspectRatio;
-        this->up = up.normalize() * halfHeight;
-
+        this->up = new Vector3(up->normalize());
     }
 

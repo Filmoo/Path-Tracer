@@ -1,5 +1,7 @@
 #include "utils.hh"
 
+#define M_PI 3.14159265358979323846
+
 uint32_t seed = 0x9e3779b9;
 
 uint32_t PCG_Hash(uint32_t x) {

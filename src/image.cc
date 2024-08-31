@@ -1,9 +1,6 @@
 #include "image.hh"
 
 
-
-
-
 void Image::save(const char *filename)
 {
     FILE *f = fopen(filename, "w");
@@ -18,14 +15,27 @@ void Image::save(const char *filename)
 
 void Image::setPixel(int x, int y, Color c)
 {
-    pixels[y * width + x] = c;
+    if (x >= 0 && x < width && y >= 0 && y < height) {
+        pixels[y * width + x] = c;
+    } else {
+        std::cerr << "Error: setPixel called with out-of-bounds coordinates (" << x << ", " << y << ")\n";
+    }
 }
 
 Color Image::getPixel(int x, int y)
 {
-    return pixels[y * width + x];
+    if (x >= 0 && x < width && y >= 0 && y < height) {
+        return pixels[y * width + x];
+    } else {
+        std::cerr << "Error: getPixel called with out-of-bounds coordinates (" << x << ", " << y << ")\n";
+        return Color(0, 0, 0); 
+    }
 }
-
+Image::Image(Image &image) {
+    width = image.width;
+    height = image.height;
+    pixels = image.pixels;
+}
 Image::Image(int width, int height)
 {
     this->width = width;
@@ -126,4 +136,63 @@ void Image::toRGB() {
         pixel.g = linearToSrgb(pixel.g);
         pixel.b = linearToSrgb(pixel.b);
     }
+}
+
+ID3D11ShaderResourceView* Image::CreateTextureFromImage(ID3D11Device* g_pd3dDevice)
+{
+    std::lock_guard<std::mutex> lock(pixelMutex);
+    std::vector<float> imageData(width * height * 4);
+    for (int i = 0; i < width * height; ++i) {
+        pixels[i] = pixels[i].Clamp();
+    }
+    for (int i = 0; i < width * height; ++i) {
+        imageData[4 * i] = 0.0f;
+        imageData[4 * i + 1] = 0.0f;
+        imageData[4 * i + 2] = 0.0f;
+        imageData[4 * i + 3] = 1.0f;
+    }
+    for (int i = 0; i < width * height; ++i) {
+        imageData[4 * i] = pixels[i].r;
+        imageData[4 * i + 1] = pixels[i].g;
+        imageData[4 * i + 2] = pixels[i].b;
+        imageData[4 * i + 3] = 1.0f; 
+    }
+    D3D11_TEXTURE2D_DESC desc;
+    ZeroMemory(&desc, sizeof(desc));
+    desc.Width = width;
+    desc.Height = height;
+    desc.MipLevels = 1;
+    desc.ArraySize = 1;
+    desc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+    desc.SampleDesc.Count = 1;
+    desc.Usage = D3D11_USAGE_DEFAULT;
+    desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+    desc.CPUAccessFlags = 0;
+    ID3D11Texture2D* pTexture = nullptr;
+    D3D11_SUBRESOURCE_DATA initData = {};
+    initData.pSysMem = imageData.data();
+    initData.SysMemPitch = width * 4 * sizeof(float); // Width * RGBA * sizeof(float)
+    HRESULT hr = g_pd3dDevice->CreateTexture2D(&desc, &initData, &pTexture);
+    if (FAILED(hr)) {
+        std::cerr << "Failed to create texture. HRESULT: " << hr << std::endl;
+        return nullptr;
+    }
+    ID3D11ShaderResourceView* pTextureView = nullptr;
+    if (pTexture)
+    {
+        D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+        srvDesc.Format = desc.Format;
+        srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+        srvDesc.Texture2D.MipLevels = 1;
+        hr = g_pd3dDevice->CreateShaderResourceView(pTexture, &srvDesc, &pTextureView);
+        if (FAILED(hr)) {
+            std::cerr << "Failed to create shader resource view. HRESULT: " << hr << std::endl;
+            pTexture->Release();
+            return nullptr;
+        }
+    }
+    if (pTexture)
+        pTexture->Release();
+    
+    return pTextureView;
 }

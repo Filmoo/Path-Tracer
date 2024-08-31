@@ -2,21 +2,28 @@
 
 cmake_minimum_required(VERSION 3.12)
 
-project(RayTracing)
+project(RayTracing LANGUAGES CXX)
 
-set(CMAKE_CXX_COMPILER g++)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
-set(CMAKE_CXX_STANDARD 11)
-
-set(CMAKE_CXX_FLAGS "-Wall -g ")
+if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w -g")
+endif()
 
 set(SOURCE_DIR src)
+set(HEADER_DIR include)
 
 # Add your source files
-file(GLOB SOURCE_FILES "${SOURCE_DIR}/*.cc")
+file(GLOB SOURCE_FILES "${SOURCE_DIR}/*.cc" "${SOURCE_DIR}/*.cpp")
 
 # Add your header files
-file(GLOB HEADER_FILES "${SOURCE_DIR}/*.hh")
+file(GLOB HEADER_FILES "${HEADER_DIR}/*.hh" "${HEADER_DIR}/*.h")
 
 # Add executable target
-add_executable(main src/scene.cc ${SOURCE_FILES} ${HEADER_FILES} src/plane.cc src/box.cc src/triangle.cc src/utils.cc src/tiny_obj_loader.cc)
+add_executable(main ${SOURCE_FILES} ${HEADER_FILES})
+
+include_directories(${HEADER_DIR})
+
+target_link_libraries(main d3d11.lib)
