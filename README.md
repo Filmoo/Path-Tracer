@@ -11,6 +11,30 @@ Pour modifier la taille de l'image il faut modifier la width dans scene.cc (~ li
 - `make`
 - `./main`
 
+# Features
+
+## UI
+- [x] Real time rendering
+- [x] Camera movement
+- [ ] Add/Modify Objects
+- [ ] Real-time Object Transformation
+- [ ] Material Editor
+- [ ] Camera Settings Panel
+- [ ] Path Tracer Settings Panel
+## Path Tracer
+- [x] Multiple Light Sources
+- [ ] Adaptive Sampling
+- [ ] Depth of Field
+- [ ] Motion Blur
+- [ ] Volumetric Scattering
+- [ ] Subsurface Scattering
+- [ ] Photon Mapping
+- [ ] Denoising
+## Opti
+- [x] Multi-threading
+- [ ] GPU Acceleration
+- [ ] BVH Acceleration Structures
+
 # Results
 <figure>
   <img
