@@ -6,11 +6,10 @@ Pour modifier la taille de l'image il faut modifier la width dans scene.cc (~ li
 
 
 # Building
-
-cd path-tracer
-cmake ..
-make
-./main
+- `cd path-tracer`
+- `cmake ..`
+- `make`
+- `./main`
 
 # Results
 <figure>
