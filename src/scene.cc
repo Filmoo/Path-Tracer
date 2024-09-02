@@ -76,7 +76,7 @@ Image Scene::Render(int img_height, int img_width, int indirectSamples, int dept
                     Point3 pixel_sample = pixel_loc + (pixelDeltaU * (-0.5 + random_double(seed,0,1))) + (pixelDeltaV * (-0.5 + random_double(seed,0,1)));
                     Vector3 rayDirection = Vector3(C, pixel_sample).normalize();
                     Color sampleColor =  rayCastColor(C, rayDirection, depth);
-                    accumulation_frame->at(y * img_width + x) += sampleColor;
+                    accumulation_frame->at((img_height - y - 1) * img_width + x) += sampleColor;
                     pixels[y * img_width + x] = accumulation_frame->at(y * img_width + x) / current_sample;
                 }
             }
