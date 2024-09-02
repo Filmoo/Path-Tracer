@@ -10,6 +10,7 @@ struct Color {
 
     // Constructor
     Color(float red, float green, float blue) : r(red), g(green), b(blue) {}
+    Color(float value) : r(value), g(value), b(value) {}
     Color() : r(0), g(0), b(0) {}
     Color(Vector3 v) : r(v.x), g(v.y), b(v.z) {}
     // Operator overloading
