@@ -1,3 +1,0 @@
-C:/Users/gabii/Epita/Path-Tracer/CMakeFiles/main.dir
-C:/Users/gabii/Epita/Path-Tracer/CMakeFiles/ALL_BUILD.dir
-C:/Users/gabii/Epita/Path-Tracer/CMakeFiles/ZERO_CHECK.dir
