@@ -9,7 +9,6 @@
 #include <vector>
 #include <fstream>
 #include <sstream>
-#include <d3d11.h>
 #include <mutex>
 
 class Image {
@@ -31,7 +30,6 @@ class Image {
         float* dataPointer();
         void toLinear();
         void toRGB();
-        ID3D11ShaderResourceView* CreateTextureFromImage(ID3D11Device* g_pd3dDevice);
 
         //operator=
         Image& operator=(const Image &image)
